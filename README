@@ -1,1 +1,48 @@
 This module is under GNU LGPL license
+
+Quick concurrent programming in Python
+
+Even though multithreading in python is inefficient because of GIL, it is helpful in some cases like scraping data. While making some scrapers for my PhD work, I have created a lightweight library that allows you to quickly implement concurrent workers in a sweet way.
+
+First you need import ThreadDistributor and Task classes:
+
+>>> from ThreadDistributor import ThreadDistributor, Task
+
+A distributor has many workers (threads), one input queue and one output queue. The below command initialize an 20-worker distributor:
+
+>>> distributor = ThreadDistributor(20)
+
+
+A task is an instance of a class which inherits from  class. Before running, the [cco]run method of this class has to be implemented. The following lines define a squaring task:
+
+class ComputationTask(Task):
+   
+    def run(self):
+        yield self.inp**2;
+
+
+Then what you need to do is to add tasks to distributor. The distributor will automatically distribute tasks to its workers. When there is no more task, it automatically stops all workers.
+
+This is an simple example of computing squares of 1,000,000 integers:
+
+from ThreadDistributor import ThreadDistributor, Task
+
+class ComputationTask(Task):
+    
+    def run(self):
+        yield self.inp**2;
+
+    
+class InitializeTask(Task):
+    
+    def run(self):
+        for i in xrange(1000000):     
+            self.distributor.add_task(ComputationTask(), i)
+        self.distributor.stop()
+        yield None
+        
+        
+if __name__ == "__main__":
+    distributor = ThreadDistributor(20)
+    distributor.add_task(InitializeTask())
+    distributor.run()
