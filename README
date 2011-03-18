@@ -37,12 +37,12 @@ class InitializeTask(Task):
     
     def run(self):
         for i in xrange(1000000):     
-            self.distributor.add_task(ComputationTask(), i)
+            self.distributor.add_task(ComputationTask, i)
         self.distributor.stop()
         yield None
         
         
 if __name__ == "__main__":
     distributor = ThreadDistributor(20)
-    distributor.add_task(InitializeTask())
+    distributor.add_task(InitializeTask)
     distributor.run()
